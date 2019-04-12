@@ -11,7 +11,7 @@ const WINNING_COMBOS = [
 ]
 
 // Turn count to keep track throughout the game
-let turn = 0;
+var turn = 0;
 
 // If turn is even, X's turn
 var player = () => turn % 2 ? 'X' : 'O';
@@ -42,6 +42,9 @@ function doTurn(square) {
   if (checkWinner()) {
     resetBoard();
     saveGame();
+  } else if (turn === 9) {
+    setMessage("Tie Game");
+    resetBoard();
   }
 }
 
@@ -54,6 +57,7 @@ function checkWinner() {
 
   WINNING_COMBOS.some(function(combo) {
     if (board[combo[0]] !== "" && board[combo[0]] === board[combo[1]] && board[combo[1]] === board[combo[2]]) {
+      debugger
       setMessage(`Player ${board[combo[0]]} Won!`);
       return winner = true;
     }
@@ -70,6 +74,8 @@ function saveGame() {
 
 }
 
+// Clears the board and resets the turn count
 function resetBoard() {
   $('td').empty();
+  turn = 0;
 }
