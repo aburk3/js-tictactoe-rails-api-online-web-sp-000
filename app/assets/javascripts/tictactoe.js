@@ -12,21 +12,26 @@ const WINNING_COMBOS = [
 
 // Turn count to keep track throughout the game
 var turn = 0;
+// Used to determine if the game being saved is new or not
+var currentGame = 0;
 
 // If turn is even, X's turn
-var player = () => turn % 2 ? 'X' : 'O';
+var player = () => turn % 2 ? 'O' : 'X';
 
 // Attaches event listeners when the page finishes loading
 $(document).ready(function() {
-  attachEventListeners();
+  attachListeners();
 });
 
-function attachEventListeners() {
+function attachListeners() {
   $('td').on('click', function() {
-    if (!$.text(this)) {
+    if (!$.text(this) && !checkWinner()) {
       doTurn(this);
     }
   });
+
+  $('#previous').on('click', () => showPreviousGames());
+  $('#save').on('click', () => saveGame());
 }
 
 // Update the square with the token of the current player 'X' or 'O'
@@ -40,10 +45,11 @@ function doTurn(square) {
   updateState(square);
   turn++;
   if (checkWinner()) {
-    resetBoard();
     saveGame();
+    resetBoard();
   } else if (turn === 9) {
-    setMessage("Tie Game");
+    setMessage("Tie game.");
+    saveGame();
     resetBoard();
   }
 }
@@ -57,7 +63,6 @@ function checkWinner() {
 
   WINNING_COMBOS.some(function(combo) {
     if (board[combo[0]] !== "" && board[combo[0]] === board[combo[1]] && board[combo[1]] === board[combo[2]]) {
-      debugger
       setMessage(`Player ${board[combo[0]]} Won!`);
       return winner = true;
     }
@@ -70,12 +75,50 @@ function setMessage(string) {
     $('#message').text(string);
 }
 
-function saveGame() {
-
-}
-
 // Clears the board and resets the turn count
 function resetBoard() {
   $('td').empty();
   turn = 0;
+  currentGame = 0;
+}
+
+// Saves a game
+function saveGame() {
+  var state = [];
+  var gameData;
+
+  $('td').text((index, square) => {
+    state.push(square);
+  });
+
+  gameData = { state: state };
+
+  if (currentGame) {
+    $.ajax({
+      type: 'PATCH',
+      url: `/games/${currentGame}`,
+      data: gameData
+    });
+  } else {
+    $.post('/games', gameData, function(game) {
+      currentGame = game.data.id;
+      $('#games').append(`<button id="gameid-${game.data.id}">${game.data.id}</button><br>`);
+      $("#gameid-" + game.data.id).on('click', () => reloadGame(game.data.id));
+    });
+  }
+}
+
+// Triggered by the 'Show Previous Games' button
+function showPreviousGames() {
+  $('#games').empty();
+  $.get('/games', (savedGames) => {
+    if (savedGames.data.length) {
+      savedGames.data.forEach(buttonizePreviousGame);
+    }
+  });
+}
+
+function buttonizePreviousGame(game) {
+  $('#games').append(`<button id="gameid-${game.id}">${game.id}</button><br>`);
+  $(`#gameid-${game.id}`).on('click', () => reloadGame(game.id));
 }
