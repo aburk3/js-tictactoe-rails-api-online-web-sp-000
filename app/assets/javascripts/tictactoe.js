@@ -32,6 +32,7 @@ function attachListeners() {
 
   $('#previous').on('click', () => showPreviousGames());
   $('#save').on('click', () => saveGame());
+  $('#clear').on('click', () => resetBoard());
 }
 
 // Update the square with the token of the current player 'X' or 'O'
@@ -85,13 +86,13 @@ function resetBoard() {
 // Saves a game
 function saveGame() {
   var state = [];
-  var gameData;
+  var gameData = { state: state };
 
   $('td').text((index, square) => {
     state.push(square);
   });
 
-  gameData = { state: state };
+
 
   if (currentGame) {
     $.ajax({
@@ -121,4 +122,21 @@ function showPreviousGames() {
 function buttonizePreviousGame(game) {
   $('#games').append(`<button id="gameid-${game.id}">${game.id}</button><br>`);
   $(`#gameid-${game.id}`).on('click', () => reloadGame(game.id));
+}
+
+function reloadGame(gameID) {
+  $('#message').empty();
+
+  $.get("/games/" + gameID + ".json", function(data){
+    debugger
+    let index = 0;
+    for (let y = 0; y < 3; y++) {
+      for (let x = 0; x < 3; x++) {
+        $(`[data-x="${x}"][data-y="${y}"]`).innerHTML = state[index];
+        index++;
+      }
+    }
+  })
+
+
 }
