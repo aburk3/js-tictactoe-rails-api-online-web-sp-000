@@ -93,7 +93,7 @@ function saveGame() {
   });
 
 
-
+  debugger
   if (currentGame) {
     $.ajax({
       type: 'PATCH',
@@ -128,15 +128,19 @@ function reloadGame(gameID) {
   $('#message').empty();
 
   $.get("/games/" + gameID + ".json", function(data){
-    debugger
+
+    const state = data.data.attributes.state
+    const id = data.id
+
     let index = 0;
     for (let y = 0; y < 3; y++) {
       for (let x = 0; x < 3; x++) {
-        $(`[data-x="${x}"][data-y="${y}"]`).innerHTML = state[index];
+        $(`[data-x="${x}"][data-y="${y}"]`).text(state[index]);
         index++;
       }
     }
-  })
+    turn = state.join('').length;
+  });
 
 
 }
