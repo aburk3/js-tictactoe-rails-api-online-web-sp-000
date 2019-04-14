@@ -13,7 +13,7 @@ const WINNING_COMBOS = [
 // Turn count to keep track throughout the game
 var turn = 0;
 // Used to determine if the game being saved is new or not
-var currentGame = 0;
+let currentGame = 0;
 
 // If turn is even, X's turn
 var player = () => turn % 2 ? 'O' : 'X';
@@ -45,6 +45,7 @@ function updateState(square) {
 function doTurn(square) {
   updateState(square);
   turn++;
+  console.log(currentGame)
   if (checkWinner()) {
     saveGame();
     resetBoard();
@@ -93,7 +94,6 @@ function saveGame() {
   });
 
 
-  debugger
   if (currentGame) {
     $.ajax({
       type: 'PATCH',
@@ -107,6 +107,7 @@ function saveGame() {
       $("#gameid-" + game.data.id).on('click', () => reloadGame(game.data.id));
     });
   }
+
 }
 
 // Triggered by the 'Show Previous Games' button
@@ -127,7 +128,7 @@ function buttonizePreviousGame(game) {
 function reloadGame(gameID) {
   $('#message').empty();
 
-  $.get("/games/" + gameID + ".json", function(data){
+  $.get("/games/" + gameID, function(data){
 
     const state = data.data.attributes.state
     const id = data.id
